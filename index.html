@@ -2,74 +2,251 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>弹窗</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>弹个小窗</title>
     <style>
-        /* 精致弹窗主体 */
-        .cute-window {
-            position: fixed;
-            width: 220px;
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-            background: white;
-            z-index: 9999;
-            overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .cute-window:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        /* 柔和标题栏 */
-        .cute-titlebar {
-            height: 32px;
-            line-height: 32px;
-            background: linear-gradient(135deg, #fdf2f8, #fef7fb);
-            color: #2d3748;
-            padding: 0 12px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #f0e6eb;
-        }
-        /* 可爱图标 */
-        .cute-icon {
-            width: 18px;
-            height: 18px;
-            margin-right: 8px;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ed8936'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17h2v-2h-2v2zm0-4h2V7h-2v8z'/%3E%3C/svg%3E") no-repeat center;
-        }
-        /* 内容区样式 */
-        .cute-content {
-            padding: 20px 15px;
-            font-size: 15px;
-            color: #4a5568;
-            line-height: 1.6;
-            text-align: center;
-            background: linear-gradient(to bottom, white, #faf6fa);
-        }
-        /* 随机柔和背景色变体 */
-        .cute-window.v1 .cute-titlebar { background: linear-gradient(135deg, #e8f4f8, #f0f8fb); }
-        .cute-window.v1 .cute-content { background: linear-gradient(to bottom, white, #f5fafe); }
-        .cute-window.v2 .cute-titlebar { background: linear-gradient(135deg, #f5f5f5, #f8f8f8); }
-        .cute-window.v2 .cute-content { background: linear-gradient(to bottom, white, #fafafa); }
-        .cute-window.v3 .cute-titlebar { background: linear-gradient(135deg, #fcf1f7, #faf0f5); }
-        .cute-window.v3 .cute-content { background: linear-gradient(to bottom, white, #fdf2f8); }
-        
         body {
             margin: 0;
             padding: 0;
-            background: #f9fafb;
-            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            overflow: hidden;
+            background: transparent;
+        }
+        .tip-box {
+            position: absolute;
+            padding: 12px;
+            border-radius: 10px;
+            color: #2d3748;
+            font-family: "PingFang SC", sans-serif;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.2s ease, transform 0.2s ease; /* 加快过渡速度 */
+            max-width: 70%;
+            font-size: 13px;
+        }
+        .tip-box.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .close-btn {
+            margin-top: 8px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #fff;
+            color: #4a5568;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s ease;
+        }
+        .close-btn:hover {
+            background-color: #f8f9fa;
+        }
+        .initial-box {
+            z-index: 999;
+            background: linear-gradient(135deg, #ffccd5 0%, #f3e8ff 100%);
+            color: #2d3748;
+            font-size: 15px;
+            padding: 20px 15px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(255, 204, 213, 0.4);
+            width: 200px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        .initial-btn {
+            margin-top: 12px;
+            padding: 7px 18px;
+            border: none;
+            border-radius: 20px;
+            background-color: #fff;
+            color: #ff8fa3;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 8px rgba(255, 143, 163, 0.2);
+        }
+        .initial-btn:hover {
+            background-color: #ff8fa3;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(255, 143, 163, 0.3);
+        }
+        .initial-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .initial-desc {
+            font-size: 12px;
+            color: #4a5568;
+            opacity: 0.9;
         }
     </style>
 </head>
 <body>
     <script>
-        // 120+条治愈系提示语
         const tips = [
+            "想你的时候，风都很温柔",
+            "今天也要记得好好吃饭呀",
+            "你的出现，让平淡有了意义",
+            "累了就歇会儿，我一直在",
+            "偷偷把思念藏进每阵风里",
+            "愿你被世界温柔以待",
+            "见到你，所有烦恼都清零",
+            "记得多喝水，别让我担心",
+            "你笑起来，比糖还甜",
+            "慢慢走，我等你",
+            "熬夜伤身体，早点休息呀",
+            "心里的位置，一直为你留着",
+            "今天的你，也超棒的！",
+            "思念无声，却从未停止",
+            "天冷加衣，别感冒啦",
+            "愿我们，岁岁常相见",
+            "把快乐打包，全部送给你",
+            "想和你一起看遍人间烟火",
+            "你的平安，是我最大的心愿",
+            "即使不见，心意也从未远离",
+            "好好照顾自己，等我找你",
+            "生活有点苦，有你就很甜",
+            "记得微笑，你笑起来真好看",
+            "思念像星星，越夜越明亮",
+            "别给自己太大压力，你已经很好了",
+            "路过奶茶店，想起你爱喝的甜度",
+            "今天的云很软，像你摸起来的样子",
+            "吃到好吃的，第一时间想分享给你",
+            "听着你喜欢的歌，就像你在身边",
+            "街角的路灯，好像在替我等你",
+            "愿你每天都有小幸运降临",
+            "记得涂防晒，别被太阳晒到啦",
+            "加班再忙，也要记得吃点东西",
+            "我的思念，跨过山海奔向你",
+            "你是藏在我心里的小小欢喜",
+            "看到可爱的东西，就想起了你",
+            "愿你前路坦荡，万事顺意",
+            "下雨了，记得带伞，别淋湿啦",
+            "和你有关的回忆，都很珍贵",
+            "想和你一起吃好多好多顿饭",
+            "你在的地方，就是我向往的远方",
+            "别硬扛，不开心就告诉我",
+            "春天的花，不及你的半分可爱",
+            "思念像藤蔓，悄悄缠绕心底",
+            "记得给手机充电，别让我找不到你",
+            "你超厉害的，一定能搞定所有事",
+            "秋天的风，带着我对你的想念",
+            "好好睡觉，做个甜甜的梦呀",
+            "我在原地，等你奔赴而来",
+            "你的笑容，是治愈一切的良药",
+            "过马路要小心，注意安全",
+            "想和你一起看日出日落",
+            "思念不会过期，爱意一直在",
+            "愿你被爱包围，永远温暖",
+            "记得多吃蔬菜，补充维生素",
+            "你是我藏在心底的温柔牵挂",
+            "冬天的雪，好像在诉说思念",
+            "别熬夜刷手机，对眼睛不好",
+            "和你在一起的时光，都很美好",
+            "愿我们的感情，细水长流",
+            "看到晚霞，就想分享给你",
+            "你值得所有的美好与温柔",
+            "记得常回家看看，家人在等你",
+            "思念如潮，涌上心头",
+            "愿你每天都过得充实又快乐",
+            "走路别玩手机，注意脚下呀",
+            "你是我生命中最珍贵的遇见",
+            "想和你一起慢慢变老",
+            "记得保持初心，勇敢向前",
+            "我的思念，只为你一人",
+            "愿你无灾无难，平安顺遂"
+        ];
+
+        const macaronColors = [
+            '#ffccd5', '#cce5ff', '#d4edda', '#fff3cd', '#e2d9f7',
+            '#ffe8cc', '#d1ecf1', '#f8d7da', '#f3e8ff', '#c3e6cb',
+            '#fff8e1', '#ffd6cc', '#e8f4f8', '#faf0f5', '#f5fafe'
+        ];
+
+        function getRandomNum(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function createTipBox() {
+            const tipBox = document.createElement('div');
+            tipBox.className = 'tip-box';
+            
+            const randomTip = tips[getRandomNum(0, tips.length - 1)];
+            const randomColor = macaronColors[getRandomNum(0, macaronColors.length - 1)];
+            
+            tipBox.textContent = randomTip;
+            tipBox.style.backgroundColor = randomColor;
+            
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const boxWidth = getRandomNum(100, 180);
+            const boxHeight = getRandomNum(50, 80);
+            
+            tipBox.style.width = `${boxWidth}px`;
+            tipBox.style.height = `${boxHeight}px`;
+            tipBox.style.left = `${getRandomNum(0, windowWidth - boxWidth)}px`;
+            tipBox.style.top = `${getRandomNum(0, windowHeight - boxHeight)}px`;
+            
+            document.body.appendChild(tipBox);
+
+            setTimeout(() => {
+                tipBox.classList.add('show');
+            }, 20); // 加快显示延迟
+        }
+
+        function createInitialBox() {
+            const initialBox = document.createElement('div');
+            initialBox.className = 'tip-box initial-box show';
+            initialBox.style.left = '50%';
+            initialBox.style.top = '50%';
+            initialBox.style.transform = 'translate(-50%, -50%)';
+            
+            const title = document.createElement('div');
+            title.className = 'initial-title';
+            title.textContent = '思念已加载完成';
+            
+            const desc = document.createElement('div');
+            desc.className = 'initial-desc';
+            desc.textContent = '点击开启专属浪漫';
+            
+            const startBtn = document.createElement('button');
+            startBtn.className = 'initial-btn';
+            startBtn.textContent = '开启思念';
+            
+            startBtn.onclick = () => {
+                initialBox.classList.remove('show');
+                setTimeout(() => {
+                    initialBox.remove();
+                    // 弹窗生成间隔从500ms缩至300ms，速度更快
+                    const popupInterval = setInterval(createTipBox, 300);
+                    setTimeout(() => {
+                        clearInterval(popupInterval);
+                    }, 180000);
+                }, 300);
+            };
+            
+            initialBox.appendChild(title);
+            initialBox.appendChild(desc);
+            initialBox.appendChild(startBtn);
+            document.body.appendChild(initialBox);
+        }
+
+        window.onload = createInitialBox;
+    </script>
+</body>
+</html>
             '多喝水哦~ 身体棒棒', '保持微笑，好运会来', '每天都要元气满满呀',
             '记得吃水果，补充维C', '保持好心情，万事顺意', '好好爱自己，才是浪漫的开始',
             '愿你梦想成真，闪闪发光', '期待下一次见面，满心欢喜', '金榜题名，前程似锦',
